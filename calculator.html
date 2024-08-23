@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Styled Calculator</title>
+    <style>
+        /* Reset and basic styles */
+        html, body {
+            padding: 0;
+            margin: 0;
+            background: whitesmoke;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Calculator Container */
+        .calc-body {
+            width: 100%;
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            background: #d82ed8;
+            box-shadow: 0px 0px 6px 0px #0006;
+            border-radius: 10px;
+        }
+
+        /* Display Screen */
+        .calc-screen {
+            background: #222;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            min-height: 80px;
+        }
+
+        /* Operation and Typed Displays */
+        #calc-operation {
+            font-size: 18px;
+            min-height: 20px;
+            text-align: right;
+            color: #aaa;
+        }
+
+        #calc-typed {
+            font-size: 32px;
+            min-height: 40px;
+            text-align: right;
+        }
+
+        /* Button Grid */
+        .calc-button-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 10px;
+        }
+
+        /* Generic Button Styles */
+        .calc-button-row button {
+            padding: 20px;
+            font-size: 20px;
+            border: none;
+            border-radius: 5px;
+            background: white;
+            color: #222;
+            cursor: pointer;
+            box-shadow: 0px 0px 2px #0003;
+            transition: background 0.3s;
+        }
+
+        .calc-button-row button:hover {
+            background: #f0f0f0;
+        }
+
+        /* Special Button Styles */
+        .calc-button-row button.opt {
+            background: #f0ad4e;
+            color: white;
+        }
+
+        .calc-button-row button.ac {
+            background: #d9534f;
+            color: white;
+        }
+
+        .calc-button-row button.equal {
+            background: #5cb85c;
+            color: white;
+            grid-column: span 2;
+        }
+
+        .calc-button-row button.zero {
+            grid-column: span 2;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Calculator Container -->
+    <div class="calc-body">
+        <!-- Display Screen -->
+        <div class="calc-screen">
+            <div id="calc-operation"></div>
+            <div id="calc-typed">0</div>
+        </div>
+        <!-- Buttons -->
+        <div class="calc-button-row">
+            <button class="ac" onclick="allClear()">AC</button>
+            <button class="opt" onclick="toggleSign()">&#177;</button>
+            <button class="opt" onclick="percent()">&#37;</button>
+            <button class="opt" onclick="addOperator('/')">&#247;</button>
+
+            <button onclick="addToExpression('7')">7</button>
+            <button onclick="addToExpression('8')">8</button>
+            <button onclick="addToExpression('9')">9</button>
+            <button class="opt" onclick="addOperator('*')">&#215;</button>
+
+            <button onclick="addToExpression('4')">4</button>
+            <button onclick="addToExpression('5')">5</button>
+            <button onclick="addToExpression('6')">6</button>
+            <button class="opt" onclick="addOperator('-')">&#8722;</button>
+
+            <button onclick="addToExpression('1')">1</button>
+            <button onclick="addToExpression('2')">2</button>
+            <button onclick="addToExpression('3')">3</button>
+            <button class="opt" onclick="addOperator('+')">&#43;</button>
+
+            <button class="zero" onclick="addToExpression('0')">0</button>
+            <button onclick="addToExpression('.')">.</button>
+            <button onclick="backspace()">&#9003;</button>
+            <button class="opt equal" onclick="calculate()">&#61;</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Functionality -->
+    <script>
+        // Display Elements
+        const operationDisplay = document.getElementById("calc-operation");
+        const typedDisplay = document.getElementById("calc-typed");
+
+        // Current Expression
+        let expression = "";
+
+        // Function to Add Numbers and Decimal Point
+        function addToExpression(value) {
+            if (typedDisplay.innerText === "0" && value !== ".") {
+                typedDisplay.innerText = value;
+            } else {
+                typedDisplay.innerText += value;
+            }
+            expression += value;
+            operationDisplay.innerText = expression;
+        }
+
+        // Function to Add Operators
+        function addOperator(operator) {
+            if (expression === "") return; // Prevent starting with an operator
+            const lastChar = expression.slice(-1);
+            if ("+-*/".includes(lastChar)) {
+                // Replace the last operator with the new one
+                expression = expression.slice(0, -1) + operator;
+            } else {
+                expression += operator;
+            }
+            operationDisplay.innerText = expression;
+            typedDisplay.innerText = "";
+        }
+
+        // Function to Calculate the Result
+        function calculate() {
+            try {
+                const result = eval(expression);
+                typedDisplay.innerText = result;
+                expression = result.toString();
+                operationDisplay.innerText = expression;
+            } catch (error) {
+                typedDisplay.innerText = "Error";
+                expression = "";
+                operationDisplay.innerText = "";
+            }
+        }
+
+        // Function to Clear All Inputs
+        function allClear() {
+            expression = "";
+            operationDisplay.innerText = "";
+            typedDisplay.innerText = "0";
+        }
+
+        // Function to Toggle Sign (+/-)
+        function toggleSign() {
+            if (expression === "") return;
+            const lastNumberMatch = expression.match(/(-?\d+\.?\d*)$/);
+            if (lastNumberMatch) {
+                let lastNumber = lastNumberMatch[0];
+                let toggledNumber;
+                if (lastNumber.startsWith('-')) {
+                    toggledNumber = lastNumber.slice(1);
+                } else {
+                    toggledNumber = '-' + lastNumber;
+                }
+                expression = expression.slice(0, -lastNumber.length) + toggledNumber;
+                operationDisplay.innerText = expression;
+                typedDisplay.innerText = toggledNumber;
+            }
+        }
+
+        // Function to Calculate Percentage
+        function percent() {
+            if (expression === "") return;
+            const lastNumberMatch = expression.match(/(\d+\.?\d*)$/);
+            if (lastNumberMatch) {
+                const number = parseFloat(lastNumberMatch[0]);
+                const percentage = (number / 100).toString();
+                expression = expression.slice(0, -lastNumberMatch[0].length) + percentage;
+                operationDisplay.innerText = expression;
+                typedDisplay.innerText = percentage;
+            }
+        }
+
+        // Function for Backspace
+        function backspace() {
+            if (expression === "") return;
+            expression = expression.slice(0, -1);
+            operationDisplay.innerText = expression;
+            // Update the typed display
+            const lastNumberMatch = expression.match(/(\d+\.?\d*)$/);
+            if (lastNumberMatch) {
+                typedDisplay.innerText = lastNumberMatch[0];
+            } else {
+                typedDisplay.innerText = "0";
+            }
+        }
+    </script>
+
+</body>
+</html>
